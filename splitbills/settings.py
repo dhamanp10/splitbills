@@ -124,6 +124,12 @@ USE_TZ = True
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "group_images"),
+    os.path.join(BASE_DIR, "Transaction_images"),
+    os.path.join(BASE_DIR, "user_images")
+)
+
 STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR
 MEDIA_URL = "/images/download/"
