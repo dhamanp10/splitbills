@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-nv$9tv1pscg)vb73716c_wy9)0g_0fhy!_ml_t$31#&k4jcwk4'
 
 account_sid = "ACa53c9259791cae5805a23e292aeb5523"
-auth_token = "8704b6be43b05c0f66c6d473e991879c"
+auth_token = "c31d6a6b2aa4c1ba55196ac5fa3f6365"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
