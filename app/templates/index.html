@@ -1,0 +1,80 @@
+{% extends 'base.html'%}
+{% load custom_filter %}
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="row">
+
+    <!-- filter -->
+    <div class="col-lg-2 mx-auto">
+      <div class="list-group">
+        <a href="/create_group"><button type="button" class="btn btn-success">+ Create Group</button></a>
+        
+        <!-- {% for cat in categories %}
+        <a href="/?category={{cat.id}}" class="list-group-item list-group-item-action ">{{cat.name}}</a>
+        {% endfor %} -->
+      </div>
+
+    </div>
+
+
+    <!-- all groups -->
+    <div id="groups" class="col-lg-10 mx-auto">
+      <ul class="list-group">
+        {% for group in groups %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {% if group.image %}
+          <div class="col">
+            <img src="{{group.image.url}}" class="rounded-circle p-1" alt="{{group.name}}" width="100" height="100">
+          </div>
+          {% endif %}
+          <div class="col">
+            <p class="font-weight-normal text-lg-left" style="font-size:1vw">{{group.name}}</p>
+
+          </div>
+          <div class="col">
+            <span class="badge badge-warning badge-pill">{{group.total|currency}}</span>
+
+          </div>
+          <div class="col">
+            <form action="/group" method="get">
+              <input type="hidden" name="groupId" value="{{group.id}}">
+              <button type="submit" class="btn btn-outline-primary btn-lg btn-block">Open</button>
+            </form>
+          </div>
+          <div class="col">
+            <form action="/group_delete" method="get">
+              <input type="hidden" name="groupId" value="{{group.id}}">
+              <button type="submit" class="btn btn-outline-danger btn-lg ">Delete</button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+
+
+
+      <!-- <ul class="list-group">
+      {% for group in groups %}
+      
+      <form action="/group" method="get" class="d-flex">
+        {% csrf_token %}
+        <input type="hidden" name="groupId" value="{{group.id}}">
+        <button type="submit">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <img src="{{group.image.url}}" class="rounded-circle p-1" alt="{{group.name}}" width="100" height="100">
+            <p class="font-weight-normal text-lg-left">{{group.name}}</p>
+            <span class="badge badge-primary badge-pill">{{group.total|currency}}</span>
+          </li>
+        </button>
+      
+    </form>
+      {% endfor %}
+    </ul> -->
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,430 @@
+{% extends 'base.html'%}
+
+
+{% block content %}
+<script>
+  var style = document.createElement('style');
+  style.setAttribute("id", "multiselect_dropdown_styles");
+  style.innerHTML = `
+  .multiselect-dropdown{
+    display: inline-block;
+    padding: 2px 5px 0px 5px;
+    border-radius: 4px;
+    border: solid 1px #ced4da;
+    background-color: white;
+    position: relative;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    background-size: 16px 12px;
+  }
+  .multiselect-dropdown span.optext, .multiselect-dropdown span.placeholder{
+    margin-right:0.5em; 
+    margin-bottom:2px;
+    padding:1px 0; 
+    border-radius: 4px; 
+    display:inline-block;
+  }
+  .multiselect-dropdown span.optext{
+    background-color:lightgray;
+    padding:1px 0.75em; 
+  }
+  .multiselect-dropdown span.optext .optdel {
+    float: right;
+    margin: 0 -6px 1px 5px;
+    font-size: 0.7em;
+    margin-top: 2px;
+    cursor: pointer;
+    color: #666;
+  }
+  .multiselect-dropdown span.optext .optdel:hover { color: #c66;}
+  .multiselect-dropdown span.placeholder{
+    color:#ced4da;
+  }
+  .multiselect-dropdown-list-wrapper{
+    box-shadow: gray 0 3px 8px;
+    z-index: 100;
+    padding:2px;
+    border-radius: 4px;
+    border: solid 1px #ced4da;
+    display: none;
+    margin: -1px;
+    position: absolute;
+    top:0;
+    left: 0;
+    right: 0;
+    background: white;
+  }
+  .multiselect-dropdown-list-wrapper .multiselect-dropdown-search{
+    margin-bottom:5px;
+  }
+  .multiselect-dropdown-list{
+    padding:2px;
+    height: 15rem;
+    overflow-y:auto;
+    overflow-x: hidden;
+  }
+  .multiselect-dropdown-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  .multiselect-dropdown-list::-webkit-scrollbar-thumb {
+    background-color: #bec4ca;
+    border-radius:3px;
+  }
+  
+  .multiselect-dropdown-list div{
+    padding: 5px;
+  }
+  .multiselect-dropdown-list input{
+    height: 1.15em;
+    width: 1.15em;
+    margin-right: 0.35em;  
+  }
+  .multiselect-dropdown-list div.checked{
+  }
+  .multiselect-dropdown-list div:hover{
+    background-color: #ced4da;
+  }
+  .multiselect-dropdown span.maxselected {width:100%;}
+  .multiselect-dropdown-all-selector {border-bottom:solid 1px #999;}
+  `;
+  document.head.appendChild(style);
+
+  function MultiselectDropdown(options) {
+    var config = {
+      search: true,
+      height: '15rem',
+      placeholder: 'select',
+      txtSelected: 'selected',
+      txtAll: 'All',
+      txtRemove: 'Remove',
+      txtSearch: 'search',
+      ...options
+    };
+    function newEl(tag, attrs) {
+      var e = document.createElement(tag);
+      if (attrs !== undefined) Object.keys(attrs).forEach(k => {
+        if (k === 'class') { Array.isArray(attrs[k]) ? attrs[k].forEach(o => o !== '' ? e.classList.add(o) : 0) : (attrs[k] !== '' ? e.classList.add(attrs[k]) : 0) }
+        else if (k === 'style') {
+          Object.keys(attrs[k]).forEach(ks => {
+            e.style[ks] = attrs[k][ks];
+          });
+        }
+        else if (k === 'text') { attrs[k] === '' ? e.innerHTML = '&nbsp;' : e.innerText = attrs[k] }
+        else e[k] = attrs[k];
+      });
+      return e;
+    }
+
+
+    document.querySelectorAll("select[multiple]").forEach((el, k) => {
+
+      var div = newEl('div', { class: 'multiselect-dropdown', style: { width: config.style?.width ?? el.clientWidth + 'px', padding: config.style?.padding ?? '' } });
+      el.style.display = 'none';
+      el.parentNode.insertBefore(div, el.nextSibling);
+      var listWrap = newEl('div', { class: 'multiselect-dropdown-list-wrapper' });
+      var list = newEl('div', { class: 'multiselect-dropdown-list', style: { height: config.height } });
+      var search = newEl('input', { class: ['multiselect-dropdown-search'].concat([config.searchInput?.class ?? 'form-control']), style: { width: '100%', display: el.attributes['multiselect-search']?.value === 'true' ? 'block' : 'none' }, placeholder: config.txtSearch });
+      listWrap.appendChild(search);
+      div.appendChild(listWrap);
+      listWrap.appendChild(list);
+
+      el.loadOptions = () => {
+        list.innerHTML = '';
+
+        if (el.attributes['multiselect-select-all']?.value == 'true') {
+          var op = newEl('div', { class: 'multiselect-dropdown-all-selector' })
+          var ic = newEl('input', { type: 'checkbox' });
+          op.appendChild(ic);
+          op.appendChild(newEl('label', { text: config.txtAll }));
+
+          op.addEventListener('click', () => {
+            op.classList.toggle('checked');
+            op.querySelector("input").checked = !op.querySelector("input").checked;
+
+            var ch = op.querySelector("input").checked;
+            list.querySelectorAll(":scope > div:not(.multiselect-dropdown-all-selector)")
+              .forEach(i => { if (i.style.display !== 'none') { i.querySelector("input").checked = ch; i.optEl.selected = ch } });
+
+            el.dispatchEvent(new Event('change'));
+          });
+          ic.addEventListener('click', (ev) => {
+            ic.checked = !ic.checked;
+          });
+
+          list.appendChild(op);
+        }
+
+        Array.from(el.options).map(o => {
+          var op = newEl('div', { class: o.selected ? 'checked' : '', optEl: o })
+          var ic = newEl('input', { type: 'checkbox', checked: o.selected });
+          op.appendChild(ic);
+          op.appendChild(newEl('label', { text: o.text }));
+
+          op.addEventListener('click', () => {
+            op.classList.toggle('checked');
+            op.querySelector("input").checked = !op.querySelector("input").checked;
+            op.optEl.selected = !!!op.optEl.selected;
+            el.dispatchEvent(new Event('change'));
+          });
+          ic.addEventListener('click', (ev) => {
+            ic.checked = !ic.checked;
+          });
+          o.listitemEl = op;
+          list.appendChild(op);
+        });
+        div.listEl = listWrap;
+
+        div.refresh = () => {
+          div.querySelectorAll('span.optext, span.placeholder').forEach(t => div.removeChild(t));
+          var sels = Array.from(el.selectedOptions);
+          if (sels.length > (el.attributes['multiselect-max-items']?.value ?? 5)) {
+            div.appendChild(newEl('span', { class: ['optext', 'maxselected'], text: sels.length + ' ' + config.txtSelected }));
+          }
+          else {
+            sels.map(x => {
+              var c = newEl('span', { class: 'optext', text: x.text, srcOption: x });
+              if ((el.attributes['multiselect-hide-x']?.value !== 'true'))
+                c.appendChild(newEl('span', { class: 'optdel', text: '🗙', title: config.txtRemove, onclick: (ev) => { c.srcOption.listitemEl.dispatchEvent(new Event('click')); div.refresh(); ev.stopPropagation(); } }));
+
+              div.appendChild(c);
+            });
+          }
+          if (0 == el.selectedOptions.length) div.appendChild(newEl('span', { class: 'placeholder', text: el.attributes['placeholder']?.value ?? config.placeholder }));
+        };
+        div.refresh();
+      }
+      el.loadOptions();
+
+      search.addEventListener('input', () => {
+        list.querySelectorAll(":scope div:not(.multiselect-dropdown-all-selector)").forEach(d => {
+          var txt = d.querySelector("label").innerText.toUpperCase();
+          d.style.display = txt.includes(search.value.toUpperCase()) ? 'block' : 'none';
+        });
+      });
+
+      div.addEventListener('click', () => {
+        div.listEl.style.display = 'block';
+        search.focus();
+        search.select();
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!div.contains(event.target)) {
+          listWrap.style.display = 'none';
+          div.refresh();
+        }
+      });
+    });
+  }
+
+  window.addEventListener('load', () => {
+    MultiselectDropdown(window.MultiselectDropdownOptions);
+  });
+</script>
+
+<script type="text/javascript">
+var percent_flag=0
+function button_visibility()
+      {
+        
+        if(percent_flag==1)
+        {
+          if(document.getElementById('errormessage').innerHTML != '100')
+          {
+            document.getElementById('submit_btn').style.display = 'none';
+          }
+          else
+          {
+            document.getElementById('submit_btn').style.display = 'block';
+          }
+          
+        }
+        else
+          {
+            document.getElementById('submit_btn').style.display = 'block';
+          }
+      }
+
+
+  function show(str) {
+    percent_flag=1
+    button_visibility()
+    document.getElementById('sh2').style.display = 'none';
+    document.getElementById('sh1').style.display = 'block';
+  }
+  function show2(sign) {
+    percent_flag=0
+    document.getElementById('sh2').style.display = 'block';
+    document.getElementById('sh1').style.display = 'none';
+  }
+
+
+
+</script>
+
+
+<div class="container">
+  <div class="p-4 m-4">
+    <div class="col-lg-5 mx-auto border rounded pt-4 ps-2 pe-2 pb-3">
+      <h4 class=" alert alert-light ">Create Transaction</h4>
+  <form name="foo" method = "post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- error message -->
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{error}}
+    </div>
+    {% endif %}
+    
+    <!-- amount -->
+    <div class="form-group mb-1">
+      <label for="myfile" class="form-label">Amount</label>
+      <input id="amount" type="number" class="form-control form-control-sm amount"
+        oninput="amountChange(this.value)" name="amount" value="{{values.amount}}">
+    </div>
+
+    <div class="form-group mb-1">
+      <label for="myfile" class="form-label">Paid By:</label>
+      <select name="user" id="field2"  multiselect-search="true" 
+        onchange="console.log(this.selectedOptions)" class="form-control form-control-sm">
+        {% for member in members %}
+        
+        <option value="{{member.user.id}}">
+          <img src="{{member.user.image.url}}" class="rounded-circle p-1" alt="" width="100" height="100">
+         {{member.user.first_name}} {{member.user.last_name}} 
+        </option>
+        
+        {% endfor %}
+      </select>
+    </div>
+
+
+    <p>
+      <input type="radio" checked="checked" name="share_option" id="e1" value="0" onchange="show2()" />&nbsp;Equal
+      Sharing&nbsp;&nbsp;&nbsp;
+      <input type="radio" name="share_option" value="1" onchange="show(this.value)" />&nbsp;percent Sharing
+    </p>
+    <!-- <div id="sh1">Hello There !!</div>
+          <p>&nbsp;</p>
+          <div id="sh2" style="display:none;">Hey Watz up !!</div> -->
+
+    <!-- percent sharing -->
+    <div id="sh1" style="display:none ;">
+      <ul class="list-group">
+        {% for member in members %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="col">
+            {% if member.user.image %}
+            <img src="{{member.user.image.url}}" class="rounded-circle mx-auto d-block"
+              alt="{{member.user.first_name}}" width="30" height="30">
+            {% endif %}
+
+          </div>
+          <div class="col">
+            <p class="font-weight-normal text-lg-left">{{member.user.first_name}}</p>
+
+          </div>
+          <script>
+            function calculateTotalvalue() {
+              button_visibility()
+              var a = document.getElementById('validAmount');
+              var z = document.getElementsByClassName('percentAmount');
+              var y = document.getElementById('errormessage');
+              var x = document.getElementsByClassName('percentage');
+              let total = 0;
+              for (i = 0; i < x.length; i++) {
+                total = Number(x[i].value) + total;
+                z[i].value = AMOUNT * Number(x[i].value) / 100;
+              }
+              y.innerHTML = total.toString();
+              if (total > 100 || total < 100) {
+                a.value = 0
+                document.getElementById("first").classList.remove('alert-success');
+                document.getElementById("first").classList.add('alert-danger');
+              }
+              else {
+                a.value = 1
+                document.getElementById("first").classList.remove('alert-danger');
+                document.getElementById("first").classList.add('alert-success');
+              }
+            }
+
+          </script>
+          <div class="col">%
+            <input type="number" name="percent{{member.user.id}}" onfocusout="button_visibility()"  oninput="calculateTotalvalue()" placeholder="%"
+              class="form-control form-control-sm percentage">
+
+          </div>
+          <div class="col">Rs.
+            <input  name="pamount{{member.user.id}}"type="text" class="form-control form-control-sm percentAmount" readonly>
+          </div>
+
+        </li>
+        {% endfor %}
+      </ul>
+      <div id="first" class="alert alert-success col" role="alert">
+        <input type="text" id="validAmount" name="validAmount" hidden>
+        <span id="errormessage"></span><span> %</span>
+      </div>
+    </div>
+
+
+
+
+    <!-- equal sharing -->
+    <div id="sh2">
+      <ul class="list-group">
+        {% for member in members %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="col">
+            {% if member.user.image %}
+            <img src="{{member.user.image.url}}" class="rounded-circle mx-auto d-block"
+              alt="{{member.user.first_name}}" width="30" height="30">
+            {% endif %}
+
+          </div>
+          <div class="col">
+            <p class="font-weight-normal text-lg-left">{{member.user.first_name}}</p>
+
+          </div>
+
+          <div class="col">
+            <script>
+              let AMOUNT = 0
+              function amountChange(v) {
+                button_visibility()
+                AMOUNT = v
+                calculateTotalvalue()
+                var e= document.getElementsByClassName('equal_percentage');
+                var x = document.getElementsByClassName('prateek');
+                for (i = 0; i < x.length; i++) {
+                  x[i].value = v / x.length;
+                  e[i].value= 100/x.length;
+                }
+              }
+            </script>
+            <input type="text" class="form-control form-control-sm equal_percentage" name="equal{{member.user.id}}" hidden>
+            <input type="text"  class="form-control form-control-sm prateek" readonly>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+
+   
+    
+    <div id="submit_btn" class="form-group mt-3 mb-1">
+      <input  class="btn btn-primary btn-block" type="submit" value="Create">
+    </div>
+  </form>
+</div>
+</div>
+</div>
+
+
+
+  {% endblock %}
