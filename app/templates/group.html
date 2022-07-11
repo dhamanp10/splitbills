@@ -82,8 +82,8 @@
             </ul>
           </div>
           <div class="col">
-            <form action="/transaction_delete" method="get">
-              <input type="hidden" name="groupId" value="{{transaction.id}}">
+            <form action="/transaction_delete" method="get" onsubmit="return confirm('Do you really want to delete!!');">
+              <input type="hidden" name="transaction_id" value="{{transaction.id}}">
               <button type="submit" class="btn btn-outline-danger ">Delete</button>
             </form>
           </div>

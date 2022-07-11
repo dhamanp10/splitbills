@@ -28,7 +28,7 @@
           </div>
           {% endif %}
           <div class="col">
-            <p class="font-weight-normal text-lg-left" style="font-size:1vw">{{group.name}}</p>
+            <h4><span class="badge badge-light">{{group.name}}</span></h4>
 
           </div>
           <div class="col">
@@ -42,7 +42,7 @@
             </form>
           </div>
           <div class="col">
-            <form action="/group_delete" method="get">
+            <form action="/group_delete" method="get" onsubmit="return confirm('Do you really want to delete!!');">
               <input type="hidden" name="groupId" value="{{group.id}}">
               <button type="submit" class="btn btn-outline-danger btn-lg ">Delete</button>
             </form>
