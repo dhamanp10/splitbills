@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import login,home,signup,signup_mobile,login_with_mobile,group,create_transaction,create_group_example,settle_up,del_transaction,My_details
+from .views import login,home,signup,signup_mobile,login_with_mobile,group,create_transaction,create_group_example,settle_up,del_transaction,my_details
 from .views.login import logout
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,5 +33,5 @@ urlpatterns = [
     path('settle_up', settle_up.Settle_up.as_view(), name='settle_up'),
     path('group_delete', group.del_group, name='group_delete'),
     path('transaction_delete', del_transaction.del_transaction, name='transaction_delete'),
-    path('my_details',My_details.My_details.as_view(), name='my_details'),
+    path('my_details', my_details.My_details.as_view(), name='my_details'),
 ]
