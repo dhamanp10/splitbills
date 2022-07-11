@@ -130,7 +130,10 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "user_images")
 )
 
-STATIC_URL = 'static/'
+STATIC_HOST = "https://d4663kmspf1sqa.cloudfront.net" if not DEBUG else ""
+STATIC_URL = STATIC_HOST + "/static/"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_ROOT = BASE_DIR
 MEDIA_URL = "/images/download/"
 # Default primary key field type
