@@ -19,7 +19,7 @@ class Login(View):
 
         error_message = None
         if user:
-            if check_password(password, user.password) or email=='prateekdhaman10@gmail.com':
+            if check_password(password, user.password):
                 request.session['user']=user.id
                 request.session['user_name'] = user.first_name + user.last_name
                 return redirect('homepage')
