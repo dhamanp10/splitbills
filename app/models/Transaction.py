@@ -9,7 +9,7 @@ class Transaction(models.Model):
     description = models.CharField(max_length=200,default='',null=True,blank=True)
     amount=models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    image = models.ImageField(upload_to='Transaction_images/',default='group_images/no-image.jpg')
+    image = models.ImageField(upload_to='static/',default='group_images/no-image.jpg')
     Group=models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
     date=models.DateField(default=datetime.datetime.now)
 

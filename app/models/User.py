@@ -6,7 +6,7 @@ class User(models.Model):
     phone = models.CharField(max_length=15, unique=True)
     email = models.EmailField()
     password = models.CharField(max_length=500)
-    image=models.ImageField(upload_to='user_images/')
+    image=models.ImageField(upload_to='static/')
 
 
     @staticmethod

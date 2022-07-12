@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-nv$9tv1pscg)vb73716c_wy9)0g_0fhy!_ml_t$31#&k4jcwk4
 
 account_sid = "ACa53c9259791cae5805a23e292aeb5523"
 auth_token = os.environ["auth_token_value"]
-
+# auth_token =""
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -125,13 +125,11 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "group_images"),
-    os.path.join(BASE_DIR, "Transaction_images"),
-    os.path.join(BASE_DIR, "user_images")
+    os.path.join(BASE_DIR, "static"),
 )
 
 STATIC_HOST = "https://d4663kmspf1sqa.cloudfront.net" if not DEBUG else ""
-STATIC_URL = STATIC_HOST + "/static/"
+STATIC_URL ="/static/"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_ROOT = BASE_DIR

@@ -4,7 +4,7 @@ from django.db import models
 class Group(models.Model):
     name = models.CharField(max_length=50)
     total=models.IntegerField(default=0)
-    image = models.ImageField(upload_to='group_images/',default='group_images/no-image.jpg')
+    image = models.ImageField(upload_to='static/',default='group_images/no-image.jpg')
 
     def register(self):
         self.save()
